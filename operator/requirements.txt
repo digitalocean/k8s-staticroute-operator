@@ -1,0 +1,2 @@
+pyroute2 == 0.7.2
+kopf[full-auth] == 1.35.6

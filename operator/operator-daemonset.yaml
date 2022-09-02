@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: static-route-operator
+spec:
+  selector:
+    matchLabels:
+      name: static-route-operator
+  template:
+    metadata:
+      labels:
+        name: static-route-operator
+    spec:
+      serviceAccountName: static-route-operator
+      hostNetwork: true
+      tolerations:
+        - operator: Exists
+      containers:
+        - name: static-route-operator
+          image: mtiutiu/static-route-operator:v0.0.3
+          imagePullPolicy: Always
+          securityContext:
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+            capabilities:
+              add:
+                - NET_ADMIN
+          env:
+            - name: OPERATOR_NAME
+              value: "static-route-operator"
+            - name: NODE_HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
