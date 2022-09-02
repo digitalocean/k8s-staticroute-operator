@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Making sure all resources are created in a dedicated namespace
+# Also specific labels and annotations are added for later identification
+namespace: static-routes
+commonAnnotations:
+  provider: container-blueprints
+
+# Apply all required resources: RBACs, CRD definitions, operator running context (DaemonSet)
+resources:
+  - namespace.yaml
+  - rbac/service_account.yaml
+  - rbac/role.yaml
+  - rbac/role_binding.yaml
+  - operator-crd.yaml
+  - operator-daemonset.yaml
