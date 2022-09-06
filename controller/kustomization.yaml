@@ -5,13 +5,13 @@ kind: Kustomization
 # Also specific labels and annotations are added for later identification
 namespace: static-routes
 commonAnnotations:
-  provider: container-blueprints
+  provider: digitalocean
 
 # Apply all required resources: RBACs, CRD definitions, operator running context (DaemonSet)
 resources:
-  - namespace.yaml
-  - rbac/service_account.yaml
-  - rbac/role.yaml
-  - rbac/role_binding.yaml
-  - operator-crd.yaml
-  - operator-daemonset.yaml
+  - config/namespace.yaml
+  - config/rbac/service_account.yaml
+  - config/rbac/role.yaml
+  - config/rbac/role_binding.yaml
+  - config/crd.yaml
+  - config/manager.yaml

@@ -5,7 +5,6 @@ metadata:
   name: static-route-operator
 subjects:
   - kind: ServiceAccount
-    namespace: default
     name: static-route-operator
 roleRef:
   kind: ClusterRole

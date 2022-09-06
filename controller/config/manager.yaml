@@ -17,7 +17,7 @@ spec:
         - operator: Exists
       containers:
         - name: static-route-operator
-          image: mtiutiu/static-route-operator:v0.0.3
+          image: mtiutiu/static-route-operator:v1.0.0
           imagePullPolicy: Always
           securityContext:
             runAsNonRoot: true

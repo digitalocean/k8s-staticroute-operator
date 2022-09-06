@@ -5,7 +5,7 @@ metadata:
   name: static-route-operator
 rules:
   # Framework: knowing which other operators are running (i.e. peering).
-  - apiGroups: [kopf.dev]
+  - apiGroups: [networking.digitalocean.com]
     resources: [clusterkopfpeerings]
     verbs: [list, watch, patch, get]
     
@@ -23,6 +23,6 @@ rules:
     verbs: [create]
 
   # Application: watching & handling for the custom resource we declare.
-  - apiGroups: [kopf.dev]
+  - apiGroups: [networking.digitalocean.com]
     resources: [staticroutes]
     verbs: [list, watch, patch]
