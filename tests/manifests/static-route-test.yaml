@@ -1,0 +1,7 @@
+apiVersion: networking.digitalocean.com/v1
+kind: StaticRoute
+metadata:
+  name: static-route-test
+spec:
+  destination: "10.42.10.0"
+  gateway: "10.0.2.100"
