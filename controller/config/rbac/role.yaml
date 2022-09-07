@@ -2,7 +2,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: static-route-operator
+  name: k8s-staticroute-operator
 rules:
   # Framework: knowing which other operators are running (i.e. peering).
   - apiGroups: [networking.digitalocean.com]

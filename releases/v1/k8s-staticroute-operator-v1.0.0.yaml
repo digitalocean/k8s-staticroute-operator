@@ -64,7 +64,7 @@ kind: ServiceAccount
 metadata:
   annotations:
     provider: digitalocean
-  name: static-route-operator
+  name: k8s-staticroute-operator
   namespace: static-routes
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -72,7 +72,7 @@ kind: ClusterRole
 metadata:
   annotations:
     provider: digitalocean
-  name: static-route-operator
+  name: k8s-staticroute-operator
 rules:
 - apiGroups:
   - networking.digitalocean.com
@@ -117,14 +117,14 @@ kind: ClusterRoleBinding
 metadata:
   annotations:
     provider: digitalocean
-  name: static-route-operator
+  name: k8s-staticroute-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: static-route-operator
+  name: k8s-staticroute-operator
 subjects:
 - kind: ServiceAccount
-  name: static-route-operator
+  name: k8s-staticroute-operator
   namespace: static-routes
 ---
 apiVersion: apps/v1
@@ -132,30 +132,30 @@ kind: DaemonSet
 metadata:
   annotations:
     provider: digitalocean
-  name: static-route-operator
+  name: k8s-staticroute-operator
   namespace: static-routes
 spec:
   selector:
     matchLabels:
-      name: static-route-operator
+      name: k8s-staticroute-operator
   template:
     metadata:
       annotations:
         provider: digitalocean
       labels:
-        name: static-route-operator
+        name: k8s-staticroute-operator
     spec:
       containers:
       - env:
         - name: OPERATOR_NAME
-          value: static-route-operator
+          value: k8s-staticroute-operator
         - name: NODE_HOSTNAME
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        image: mtiutiu/static-route-operator:v1.0.0
+        image: digitalocean/k8s-staticroute-operator:v1.0.0
         imagePullPolicy: Always
-        name: static-route-operator
+        name: k8s-staticroute-operator
         securityContext:
           capabilities:
             add:
@@ -163,6 +163,6 @@ spec:
           readOnlyRootFilesystem: true
           runAsNonRoot: true
       hostNetwork: true
-      serviceAccountName: static-route-operator
+      serviceAccountName: k8s-staticroute-operator
       tolerations:
       - operator: Exists
