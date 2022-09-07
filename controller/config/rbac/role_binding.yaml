@@ -2,11 +2,11 @@
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: static-route-operator
+  name: k8s-staticroute-operator
 subjects:
   - kind: ServiceAccount
-    name: static-route-operator
+    name: k8s-staticroute-operator
 roleRef:
   kind: ClusterRole
-  name: static-route-operator
+  name: k8s-staticroute-operator
   apiGroup: rbac.authorization.k8s.io

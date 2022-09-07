@@ -2,55 +2,53 @@
 
 Short guide about how to deploy and test the static routes operator.
 
+## Table of Contents
+
+- [Prerequisites](#prerequisites)
+- [Deploying the Kubernetes Static Routes Operator](#deploying-the-kubernetes-static-routes-operator)
+- [Testing the Setup](#testing-the-setup)
+- [Cleaning Up](#cleaning-up)
+
 ## Prerequisites
 
 1. A working DOKS cluster you have access to.
 2. Kubectl CLI installed on your local machine, and configured to point to your DOKS cluster.
-3. A git client to clone the [k8s-staticroute-operator](https://github.com/digitalocean/k8s-staticroute-operator/) repo.
-4. NAT GW Droplet configured and running as detailed [here](https://docs.digitalocean.com/products/networking/vpc/how-to/configure-droplet-as-gateway/).
+3. NAT GW Droplet configured and running as detailed [here](https://docs.digitalocean.com/products/networking/vpc/how-to/configure-droplet-as-gateway/).
 
 **Note**:
 
 **Make sure your NAT GW Droplet is created in the same VPC as your DOKS cluster.**
 
-## Deploying the Static Routes Operator
+## Deploying the Kubernetes Static Routes Operator
 
-1. Clone this repo:
+1. Deploy the latest release of static routes operator to your DOKS cluster using kubectl:
 
     ```shell
-    git clone https://github.com/digitalocean/k8s-staticroute-operator.git
+    kubectl apply -f deploy https://raw.githubusercontent.com/digitalocean/k8s-staticroute-operator/main/releases/v1/k8s-staticroute-operator-v1.0.0.yaml
     ```
 
-2. Change directory to local copy:
+    **Hint:**
+
+    You can check the latest version in the [releases](releases/) path from the [k8s-staticroute-operator](https://github.com/digitalocean/k8s-staticroute-operator/) GitHub repo.
+
+2. Check if operator Pods are up and running:
 
     ```shell
-    cd k8s-staticroute-operator/
-    ```
-
-3. Deploy the static routes operator to your DOKS cluster:
-
-    ```shell
-    kubectl apply -k controller/
-    ```
-
-4. Check if operator Pods are up and running:
-
-    ```shell
-    kubectl get pods -l name=static-route-operator -n static-routes
+    kubectl get pods -l name=k8s-staticroute-operator -n static-routes
     ```
 
     Output looks similar to:
 
     ```text
-    NAME                          READY   STATUS    RESTARTS   AGE
-    static-route-operator-9vp7g   1/1     Running   0          22m
-    static-route-operator-mlfff   1/1     Running   0          22m
+    NAME                             READY   STATUS    RESTARTS   AGE
+    k8s-staticroute-operator-9vp7g   1/1     Running   0          22m
+    k8s-staticroute-operator-mlfff   1/1     Running   0          22m
     ```
 
-5. Check operator logs - no exceptions should be reported:
+3. Check operator logs - no exceptions should be reported:
 
     ```shell
-    kubectl logs -f ds/static-route-operator -n static-routes
+    kubectl logs -f ds/k8s-staticroute-operator -n static-routes
     ```
 
     Output looks similar to:
@@ -70,11 +68,11 @@ Short guide about how to deploy and test the static routes operator.
     ...
     ```
 
-## Testing the Sample Static Routes
+## Testing the Setup
 
 Each sample CRD provided creates a static route to two different websites which report back your public IP - [ifconfig.me/ip](http://ifconfig.me/ip), and [ipinfo.io/ip](http://ipinfo.io/ip).
 
-Before applying the CRDs, make sure to change the gateway field to point to your NAT GW Droplet private IP:
+Typical static route definition looks like below:
 
 ```yaml
 apiVersion: networking.digitalocean.com/v1
@@ -83,10 +81,25 @@ metadata:
   name: static-route-ifconfig.me
 spec:
   destination: "34.160.111.145"
-  gateway: "<YOUR_NAT_GW_DROPLET_PRIVATE_IP_HERE>"
+  gateway: "10.116.0.5"
 ```
 
-Now, apply a sample manifest from within the [controller/config/samples](controller/config/samples/) directory to test the setup (make sure to replace the `<>` placeholders first inside the manifest file):
+Explanations for the above configuration:
+
+- `spec.destination` - Destination host IP address (or subnet CIDR) to route through the gateway.
+- `spec.gateway` - Gateway IP address used for routing the host/subnet.
+
+To test the setup, download a sample manifest from the [controller/config/samples](controller/config/samples/):
+
+```shell
+# Example for ifconfig.me
+curl -O https://raw.githubusercontent.com/digitalocean/k8s-staticroute-operator/main/controller/config/samples/static-route-ifconfig.me.yaml
+
+# Example for ipinfo.io
+curl -O https://raw.githubusercontent.com/digitalocean/k8s-staticroute-operator/main/controller/config/samples/static-route-ipinfo.io.yaml
+```
+
+After downloading the manifests, make sure to replace the `<>` placeholders in each manifest file. Then, apply each manifest using kubectl:
 
 ```shell
 # Example for ifconfig.me
@@ -95,6 +108,10 @@ kubectl apply -f controller/config/samples/static-route-ifconfig.me.yaml
 # Example for ipinfo.io
 kubectl apply -f controller/config/samples/static-route-ipinfo.io.yaml
 ```
+
+**Hint:**
+
+Above command will create the static route custom resources in the default namespace. In production environments (and not only), it's best to have a dedicated namespace with RBAC set (based on what people or teams need to have access).
 
 Next, check if the static route resources were created:
 
@@ -132,10 +149,10 @@ Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 
 In the above example the NAT GW private IP used for testing is `10.116.0.5`.
 
-Next, deploy the [curl-test](controller/config/samples/curl-test.yaml) Pod to test the setup (make sure you change directory to `k8s-staticroute-operator` first):
+Next, deploy the [curl-test](controller/config/samples/curl-test.yaml) Pod to test the setup:
 
 ```shell
-kubectl apply -f controller/config/samples/curl-test.yaml
+kubectl apply -f https://raw.githubusercontent.com/digitalocean/k8s-staticroute-operator/main/controller/config/samples/curl-test.yaml
 ```
 
 Finally, test if the curl-test pod replies back your NAT GW public IP for each route:
@@ -152,20 +169,23 @@ kubectl exec -it curl-test -- curl ipinfo.io/ip
 
 ## Cleaning Up
 
-To clean up the operator and associated resources, please run the following command from within the `k8s-staticroute-operator` directory:
+To clean up the operator and associated resources, please run the following kubectl command (make sure you're using the same release version as in the install step):
 
 ```shell
-kubectl delete -k controller/
+kubectl delete -f deploy https://raw.githubusercontent.com/digitalocean/k8s-staticroute-operator/main/releases/v1/k8s-staticroute-operator-v1.0.0.yaml
 ```
+
+**Note:**
+Above command will delete the associated namespace as well (`static-routes`). Make sure to backup your CRDs first, if needed later.
 
 The output looks similar to:
 
 ```text
 customresourcedefinition.apiextensions.k8s.io "staticroutes.networking.digitalocean.com" deleted
-serviceaccount "static-route-operator" deleted
-clusterrole.rbac.authorization.k8s.io "static-route-operator" deleted
-clusterrolebinding.rbac.authorization.k8s.io "static-route-operator" deleted
-daemonset.apps "static-route-operator" deleted
+serviceaccount "k8s-staticroute-operator" deleted
+clusterrole.rbac.authorization.k8s.io "k8s-staticroute-operator" deleted
+clusterrolebinding.rbac.authorization.k8s.io "k8s-staticroute-operator" deleted
+daemonset.apps "k8s-staticroute-operator" deleted
 ```
 
 Check the routes on each worker node, after SSH-ing:

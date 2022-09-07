@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: static-route-operator
+  name: k8s-staticroute-operator
 spec:
   selector:
     matchLabels:
-      name: static-route-operator
+      name: k8s-staticroute-operator
   template:
     metadata:
       labels:
-        name: static-route-operator
+        name: k8s-staticroute-operator
     spec:
-      serviceAccountName: static-route-operator
+      serviceAccountName: k8s-staticroute-operator
       hostNetwork: true
       tolerations:
         - operator: Exists
       containers:
-        - name: static-route-operator
-          image: mtiutiu/static-route-operator:v1.0.0
+        - name: k8s-staticroute-operator
+          image: digitalocean/k8s-staticroute-operator:v1.0.0
           imagePullPolicy: Always
           securityContext:
             runAsNonRoot: true
@@ -27,7 +27,7 @@ spec:
                 - NET_ADMIN
           env:
             - name: OPERATOR_NAME
-              value: "static-route-operator"
+              value: "k8s-staticroute-operator"
             - name: NODE_HOSTNAME
               valueFrom:
                 fieldRef:

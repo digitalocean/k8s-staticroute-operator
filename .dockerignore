@@ -1,0 +1,18 @@
+# Byte-compiled / optimized / DLL files
+**/__pycache__/
+**/*.py[cod]
+
+# Pytest
+**/.pytest_cache/
+
+# Virtualenv
+**/.venv*/
+
+# K8S manifests
+**/config/
+
+# YAML
+**/*.yaml
+
+# Generator script(s)
+**/generate_api.py
