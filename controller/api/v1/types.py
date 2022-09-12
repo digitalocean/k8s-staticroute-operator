@@ -3,6 +3,10 @@ from apischema import schema
 from ..schema import OpenAPIV3Schema
 
 
+# Static route API representation
+# Final CRD is generated upon below dataclass via `make manifests` command
+# WIP
+
 @dataclass
 class StaticRoute(OpenAPIV3Schema):
     __group__ = 'networking.digitalocean.com'
@@ -33,12 +37,12 @@ class StaticRoute(OpenAPIV3Schema):
     destination: str = field(
         metadata=schema(
             description='Destination host/subnet to route through the gateway (required)',
-            pattern='^([0-9]{1,3}\.){3}[0-9]{1,3}$|^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$'
+            pattern='^([0-9]{1,3}\.){3}[0-9]{1,3}$|^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$',
         )
     )
     gateway: str = field(
         metadata=schema(
             description='Gateway to route through (required)',
-            pattern='^([0-9]{1,3}\.){3}[0-9]{1,3}$'
+            pattern='^([0-9]{1,3}\.){3}[0-9]{1,3}$',
         )
     )

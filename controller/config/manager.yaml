@@ -17,7 +17,7 @@ spec:
         - operator: Exists
       containers:
         - name: k8s-staticroute-operator
-          image: digitalocean/k8s-staticroute-operator:v1.0.0
+          image: digitalocean/k8s-staticroute-operator:<OPERATOR_RELEASE>
           imagePullPolicy: Always
           securityContext:
             runAsNonRoot: true
