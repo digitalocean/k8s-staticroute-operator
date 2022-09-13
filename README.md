@@ -89,24 +89,24 @@ Explanations for the above configuration:
 - `spec.destination` - Destination host IP address (or subnet CIDR) to route through the gateway.
 - `spec.gateway` - Gateway IP address used for routing the host/subnet.
 
-To test the setup, download a sample manifest from the [controller/config/samples](controller/config/samples/):
+To test the setup, download a sample manifest from the [examples](examples) location:
 
 ```shell
 # Example for ifconfig.me
-curl -O https://raw.githubusercontent.com/digitalocean/k8s-staticroute-operator/main/controller/config/samples/static-route-ifconfig.me.yaml
+curl -O https://raw.githubusercontent.com/digitalocean/k8s-staticroute-operator/main/examples/static-route-ifconfig.me.yaml
 
 # Example for ipinfo.io
-curl -O https://raw.githubusercontent.com/digitalocean/k8s-staticroute-operator/main/controller/config/samples/static-route-ipinfo.io.yaml
+curl -O https://raw.githubusercontent.com/digitalocean/k8s-staticroute-operator/main/examples/static-route-ipinfo.io.yaml
 ```
 
 After downloading the manifests, make sure to replace the `<>` placeholders in each manifest file. Then, apply each manifest using kubectl:
 
 ```shell
 # Example for ifconfig.me
-kubectl apply -f controller/config/samples/static-route-ifconfig.me.yaml
+kubectl apply -f static-route-ifconfig.me.yaml
 
 # Example for ipinfo.io
-kubectl apply -f controller/config/samples/static-route-ipinfo.io.yaml
+kubectl apply -f static-route-ipinfo.io.yaml
 ```
 
 **Hint:**
@@ -149,10 +149,10 @@ Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 
 In the above example the NAT GW private IP used for testing is `10.116.0.5`.
 
-Next, deploy the [curl-test](controller/config/samples/curl-test.yaml) Pod to test the setup:
+Next, deploy the [curl-test](examples/curl-test.yaml) Pod to test the setup:
 
 ```shell
-kubectl apply -f https://raw.githubusercontent.com/digitalocean/k8s-staticroute-operator/main/controller/config/samples/curl-test.yaml
+kubectl apply -f https://raw.githubusercontent.com/digitalocean/k8s-staticroute-operator/main/examples/curl-test.yaml
 ```
 
 Finally, test if the curl-test pod replies back your NAT GW public IP for each route:

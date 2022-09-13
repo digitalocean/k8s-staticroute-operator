@@ -1,61 +1,65 @@
 import kopf
 from pyroute2 import IPRoute
 from api.v1.types import StaticRoute
-
-ROUTE_READY_MSG = {'routeStatus': 'Ready'}
-ROUTE_NOT_READY_MSG = {'routeStatus': 'NotReady'}
+from constants import DEFAULT_GW_CIDR, NOT_USABLE_IP_ADDRESS, ROUTE_READY_MSG, ROUTE_NOT_READY_MSG
 
 
-def create_static_route(destination, gateway, logger=None):
-    success = False
+# =================================== Static route management ===========================================
+#
+# Works the same way as Linux `ip route` subcommands:
+#  - "add":     Adds a new entry in the Linux routing table (must not exist beforehand)
+#  - "change":  Changes an entry from the the Linux routing table (must exist beforehand)
+#  - "delete":  Deletes an entry from the Linux routing table (must exist beforehand)
+#  - "replace": Replaces an entry from the Linux routing table if it exists, creates a new one otherwise
+#
+# =======================================================================================================
+
+def manage_static_route(operation, destination, gateway, logger=None):
+    operation_success = False
     message = ''
+
+    # We don't want to mess with default GW settings, or with '0.0.0.0' IP address
+    if DEFAULT_GW_CIDR in destination or NOT_USABLE_IP_ADDRESS in destination:
+        operation_success = False
+        message = f"Route {operation} request denied - dest: {destination}, gateway: {gateway}!"
+        if logger is not None:
+            logger.error(message)
+        return (operation_success, message)
 
     with IPRoute() as ipr:
         try:
-            ipr.route("add", dst=destination, gateway=gateway)
-            success = True
-            message = f"Route - dst: {destination}, gateway: {gateway} created successfully!"
+            ipr.route(operation, dst=destination, gateway=gateway)
+            operation_success = True
+            message = f"Success - Dest: {destination}, gateway: {gateway}, operation: {operation}."
             if logger is not None:
                 logger.info(message)
         except Exception as ex:
-            success = False
-            message = f"Route create failed! Error message: {ex}"
+            operation_success = False
+            message = f"Route {operation} failed! Error message: {ex}"
             if logger is not None:
                 logger.error(message)
 
-    return (success, message)
+    return (operation_success, message)
 
 
-def delete_static_route(destination, gateway, logger=None):
-    success = False
-    message = ''
-
-    with IPRoute() as ipr:
-        try:
-            ipr.route("del", dst=destination, gateway=gateway)
-            success = True
-            message = f"Route - dst: {destination}, gateway: {gateway} deleted successfully!"
-            if logger is not None:
-                logger.info(message)
-        except Exception as ex:
-            success = False
-            message = f"Route delete failed! Error message: {ex}"
-            if logger is not None:
-                logger.error(message)
-
-    return (success, message)
-
+# ============================== Create Handler =====================================
+#
+# Default behavior is to "add" the static route specified in our CRD only!
+# If the static route already exists, it will not be overwritten.
+#
+# ===================================================================================
 
 @kopf.on.resume(StaticRoute.__group__, StaticRoute.__version__, StaticRoute.__name__)
 @kopf.on.create(StaticRoute.__group__, StaticRoute.__version__, StaticRoute.__name__)
 def create_fn(body, spec, logger, **kwargs):
-    route_add_succeeded, message = create_static_route(
-        spec['destination'],
-        spec['gateway'],
-        logger
+    add_operation_succeeded, message = manage_static_route(
+        operation="add",
+        destination=spec['destination'],
+        gateway=spec['gateway'],
+        logger=logger
     )
 
-    if not route_add_succeeded:
+    if not add_operation_succeeded:
         kopf.exception(
             body,
             reason='RouteCreateFailed',
@@ -71,32 +75,34 @@ def create_fn(body, spec, logger, **kwargs):
     return ROUTE_READY_MSG
 
 
+# ============================== Update Handler =====================================
+#
+# Default behavior is to update/replace the static route specified in our CRD only!
+#
+# ===================================================================================
+
 @kopf.on.update(StaticRoute.__group__, StaticRoute.__version__, StaticRoute.__name__)
 def update_fn(body, old, new, logger, **kwargs):
-    route_delete_succeeded, message = delete_static_route(
-        old['spec']['destination'],
-        old['spec']['gateway'],
-        logger
+    delete_operation_succeeded, message = manage_static_route(
+        operation="del",
+        destination=old['spec']['destination'],
+        gateway=old['spec']['gateway'],
+        logger=logger
     )
 
-    if not route_delete_succeeded:
-        kopf.exception(
-            body,
-            reason='RouteDeleteFailed',
-            message=message
-        )
-        return ROUTE_NOT_READY_MSG
-
-    route_add_succeeded, message = create_static_route(
-        new['spec']['destination'],
-        new['spec']['gateway'],
-        logger
+    add_operation_succeeded, message = manage_static_route(
+        operation="add",
+        destination=new['spec']['destination'],
+        gateway=new['spec']['gateway'],
+        logger=logger
     )
 
-    if not route_add_succeeded:
+    # 'delete' op may fail because route is not allowed, or doesn't exist anymore 
+    # 'add' op status is most relevant
+    if not add_operation_succeeded:
         kopf.exception(
             body,
-            reason='RouteCreateFailed',
+            reason='RouteUpdateFailed',
             message=message
         )
         return ROUTE_NOT_READY_MSG
@@ -109,15 +115,22 @@ def update_fn(body, old, new, logger, **kwargs):
     return ROUTE_READY_MSG
 
 
+# ============================== Delete Handler =====================================
+#
+# Default behavior is to delete the static route specified in our CRD only!
+#
+# ===================================================================================
+
 @kopf.on.delete(StaticRoute.__group__, StaticRoute.__version__, StaticRoute.__name__)
 def delete(body, spec, logger, **kwargs):
-    route_delete_succeeded, message = delete_static_route(
-        spec['destination'],
-        spec['gateway'],
-        logger
+    delete_operation_succeeded, message = manage_static_route(
+        operation="del",
+        destination=spec['destination'],
+        gateway=spec['gateway'],
+        logger=logger
     )
 
-    if not route_delete_succeeded:
+    if not delete_operation_succeeded:
         kopf.exception(
             body,
             reason='RouteDeleteFailed',
