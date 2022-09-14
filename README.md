@@ -1,6 +1,10 @@
 # Overview
 
-Short guide about how to deploy and test the static routes operator.
+The main purpose of the Static Routes Operator is to manage entries in the Linux routing table of each worker node based on CRD spec. It is deployed as a `DaemonSet`, hence it will run on each node of your DOKS cluster.
+
+Below diagram illustrates the operational concept:
+
+![Static Routes Controller Overview](assets/images/sr_operator.png)
 
 ## Table of Contents
 
