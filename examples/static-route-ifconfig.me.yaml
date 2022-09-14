@@ -3,5 +3,6 @@ kind: StaticRoute
 metadata:
   name: static-route-ifconfig.me
 spec:
-  destination: "34.160.111.145"
+  destinations:
+    - "34.160.111.145"
   gateway: "<YOUR_NAT_GW_DROPLET_PRIVATE_IP_HERE>"

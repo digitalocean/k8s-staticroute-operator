@@ -19,6 +19,11 @@ spec:
         - name: k8s-staticroute-operator
           image: digitalocean/k8s-staticroute-operator:<OPERATOR_RELEASE>
           imagePullPolicy: Always
+          resources:
+            requests:
+              memory: "100Mi"
+            limits:
+              memory: "150Mi"
           securityContext:
             runAsNonRoot: true
             readOnlyRootFilesystem: true

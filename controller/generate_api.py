@@ -7,7 +7,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output-path",
         help="Output CRD files to specified folder path, else use current folder",
-        default="."
+        default=".",
     )
     args = parser.parse_args()
 
