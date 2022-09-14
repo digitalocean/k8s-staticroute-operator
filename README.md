@@ -121,7 +121,7 @@ Above command will create the static route custom resources in the default names
 Next, check if the static route resources were created:
 
 ```shell
-kubectl get staticroutes
+kubectl get staticroutes -o wide
 ```
 
 The output looks similar to:
