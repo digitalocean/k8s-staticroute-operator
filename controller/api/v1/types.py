@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from apischema import schema
+from typing import NewType
 from ..schema import OpenAPIV3Schema
 
 
@@ -7,42 +8,50 @@ from ..schema import OpenAPIV3Schema
 # Final CRD is generated upon below dataclass via `make manifests` command
 # WIP
 
+
 @dataclass
 class StaticRoute(OpenAPIV3Schema):
-    __group__ = 'networking.digitalocean.com'
-    __version__ = 'v1'
-    __scope__ = 'Cluster'
-    __short_names__ = ['sr']
+    __group__ = "networking.digitalocean.com"
+    __version__ = "v1"
+    __scope__ = "Cluster"
+    __short_names__ = ["sr"]
 
     __additional_printer_columns__ = [
         {
-            'name': 'Destination',
-            'type': 'string',
-            'description': 'Destination host/subnet',
-            'jsonPath': '.spec.destination',
+            "name": "Age",
+            "type": "date",
+            "priority": 0,
+            "jsonPath": ".metadata.creationTimestamp",
         },
         {
-            'name': 'Gateway',
-            'type': 'string',
-            'description': 'Gateway to route through',
-            'jsonPath': '.spec.gateway',
+            "name": "Destinations",
+            "type": "string",
+            "priority": 1,
+            "description": "Destination host(s)/subnet(s)",
+            "jsonPath": ".spec.destinations",
         },
         {
-            'name': 'Age',
-            'type': 'date',
-            'jsonPath': '.metadata.creationTimestamp',
-        }
+            "name": "Gateway",
+            "type": "string",
+            "priority": 1,
+            "description": "Gateway to route through",
+            "jsonPath": ".spec.gateway",
+        },
     ]
 
-    destination: str = field(
+    Destination = NewType("Destination", str)
+    schema(
+        pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$|^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$",
+    )(Destination)
+
+    destinations: list[Destination] = field(
         metadata=schema(
-            description='Destination host/subnet to route through the gateway (required)',
-            pattern='^([0-9]{1,3}\.){3}[0-9]{1,3}$|^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$',
+            description="Destination host(s)/subnet(s) to route through the gateway (required)",
         )
     )
     gateway: str = field(
         metadata=schema(
-            description='Gateway to route through (required)',
-            pattern='^([0-9]{1,3}\.){3}[0-9]{1,3}$',
+            description="Gateway to route through (required)",
+            pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$",
         )
     )

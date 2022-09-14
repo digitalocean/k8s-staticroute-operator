@@ -80,14 +80,15 @@ kind: StaticRoute
 metadata:
   name: static-route-ifconfig.me
 spec:
-  destination: "34.160.111.145"
+  destinations: 
+    - "34.160.111.145"
   gateway: "10.116.0.5"
 ```
 
 Explanations for the above configuration:
 
-- `spec.destination` - Destination host IP address (or subnet CIDR) to route through the gateway.
-- `spec.gateway` - Gateway IP address used for routing the host/subnet.
+- `spec.destinations` - A list of host IPs (or subnet CIDRs) to route through the gateway.
+- `spec.gateway` - Gateway IP address used for routing the host(s)/subnet(s).
 
 To test the setup, download a sample manifest from the [examples](examples) location:
 
@@ -122,9 +123,9 @@ kubectl get staticroutes
 The output looks similar to:
 
 ```text
-NAME                       DESTINATION      GATEWAY      AGE
-static-route-ifconfig.me   34.160.111.145   10.116.0.5   7m2s
-static-route-ipinfo.io     34.117.59.81     10.116.0.5   4s
+NAME                       DESTINATIONS         GATEWAY      AGE
+static-route-ifconfig.me   ["34.160.111.145"]   10.116.0.5   7m2s
+static-route-ipinfo.io     ["34.117.59.81"]     10.116.0.5   4s
 ```
 
 Now, check if the custom static routes were applied on each worker node, after SSH-ing:

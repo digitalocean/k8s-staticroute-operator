@@ -3,5 +3,6 @@ kind: StaticRoute
 metadata:
   name: static-route-ipinfo.io
 spec:
-  destination: "34.117.59.81"
+  destination:
+    - "34.117.59.81"
   gateway: "<YOUR_NAT_GW_DROPLET_PRIVATE_IP_HERE>"
