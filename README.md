@@ -231,7 +231,7 @@ basicnp-7micg   Ready    <none>   3h20m   v1.23.9   10.116.0.2    206.189.231.90
 basicnp-7micw   Ready    <none>   3h20m   v1.23.9   10.116.0.3    206.81.2.154     Debian GNU/Linux 10 (buster)   5.10.0-0.bpo.15-amd64   containerd://1.4.13
 ```
 
-Above example reports - `206.189.231.9`.
+Above example reports - `206.189.231.90`.
 
 Exec the `ifconfig.me/ip` curl:
 
@@ -242,5 +242,5 @@ kubectl exec -it curl-test -- curl ifconfig.me/ip
 The output looks similar to:
 
 ```text
-206.189.231.9
+206.189.231.90
 ```
