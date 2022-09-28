@@ -28,7 +28,7 @@ Below diagram illustrates the operational concept:
 1. Deploy the latest release of static routes operator to your DOKS cluster using kubectl:
 
     ```shell
-    kubectl apply -f deploy https://raw.githubusercontent.com/digitalocean/k8s-staticroute-operator/main/releases/v1/k8s-staticroute-operator-v1.0.0.yaml
+    kubectl apply -f https://raw.githubusercontent.com/digitalocean/k8s-staticroute-operator/main/releases/v1/k8s-staticroute-operator-v1.0.0.yaml
     ```
 
     **Hint:**
