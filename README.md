@@ -244,3 +244,56 @@ The output looks similar to:
 ```text
 206.189.231.90
 ```
+
+### Failing over gateways
+
+In order to protect against gateway failures, it is recommended to prepare a standby gateway droplet and failover when necessary. While the operator does not support true HA, failing over enables to minimize the window of disruption.
+
+Requirements:
+
+1. Have one (or more) gateway droplets fully configured and ready to take traffic. (This may entail allow-listing the droplet's IP address with downstream receivers.)
+1. Implement a method to identify when a gateway droplet is failing. This could be as simple as probing the droplet repeatedly from inside the cluster and considering it down if the probes fail repeatedly, to aggregating multiple signals from observability systems and coming to an availability determination. The exact implementation depends on the user's needs and should ideally yield a good signal-to-noise ratio.
+1. All operator instances are up and running correctly at the time of the failover. (More specifically, at step (3) of the failover procedure outlined below.)
+
+Let's assume that we have a single destination IP address 34.160.111.145 that the active (or primary) gateway with IP addess 10.116.0.5 is transmitting traffic for. The corresponding `StaticRoute` would look like this
+
+```yaml
+# ./primary.yaml
+apiVersion: networking.digitalocean.com/v1
+kind: StaticRoute
+metadata:
+  name: primary
+spec:
+  destinations: 
+    - "34.160.111.145"
+  gateway: "10.116.0.5"
+```
+
+and stored in the file `primary.yaml`.
+
+Our standby (or secondary) gateway has IP adress 10.116.0.12 and is prepared to serve traffic for the same destination IP address. Its `StaticRoute` definition is identical to the previous one, only differing in the gateway IP address (and the object name):
+
+```yaml
+# ./secondary.yaml
+apiVersion: networking.digitalocean.com/v1
+kind: StaticRoute
+metadata:
+  name: secondary
+spec:
+  destinations: 
+    - "34.160.111.145"
+  gateway: "10.116.0.12"
+```
+
+Let's further assume the above is stored in the file `secondary.yaml`.
+
+The actual failover procedure then consists of the following steps:
+
+1. Identify that the active gateway with IP address 10.116.0.5 is failing. (As described above, the details are implementation-specific and out of scope for the operator.)
+1. Delete the currently active `StaticRoute`: `kubectl delete -f primary.yaml`
+1. Wait 30 to 60 seconds to give each operator instance enough time to process the object deletion; that is, respond by removing the route from all nodes.
+1. Apply the standby `StaticRoute`: `kubectl apply -f secondary.yaml`
+
+The operator should pick up the new standby `StaticRoute` and put in the corresponding routing table entries. Afterwards, the failover has completed.
+
+**Important:** Do _not_ update an existing `StaticRoute` for a new gateway IP address (e.g., run `kubectl edit staticroute primary` to modify just the `spec.gateway` field) -- this is currently not supported and leads to failures. Issue digitalocean/k8s-staticroute-operator#23 tracks closing this gap.  
