@@ -7,6 +7,7 @@ from constants import ROUTE_EVT_MSG
 from constants import ROUTE_READY_MSG
 from constants import ROUTE_NOT_READY_MSG
 from utils import valid_ip_address
+import socket
 
 
 # =================================== Static route management ===========================================
@@ -109,6 +110,14 @@ def process_static_routes(routes, operation, event_ctx=None, logger=None):
 def create_fn(body, spec, logger, **_):
     destinations = spec.get("destinations", [])
     gateway = spec["gateway"]
+
+    if (gateway == ""):
+        try:
+            gateway = socket.gethostbyname(spec["clusterservice"])
+        except socket.gaierror as e:
+            print(f'Invalid hostname, error raised is {e}')
+            gateway=DEFAULT_GW_CIDR
+    
     routes_to_add_spec = [
         {"destination": destination, "gateway": gateway} for destination in destinations
     ]
