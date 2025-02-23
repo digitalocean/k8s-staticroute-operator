@@ -1,3 +1,6 @@
+### 2/22/2025: We will release a *managed* static route operator (called *routing agent*) for DigitalOcean Kubernetes within a couple of weeks. It will support both 0.0.0.0 default route, and multiple destinations using ECMP!! This repo will become irrelevant and replaced by a managed component. We strongly recommend to wait for the new release if you are starting out now.
+
+
 # Overview
 
 The main purpose of the Static Routes Operator is to manage entries in the Linux routing table of each worker node based on CRD spec. It is deployed as a `DaemonSet`, hence it will run on each node of your DOKS cluster.
