@@ -1,3 +1,6 @@
+### DOKS static route operator is available as a managed component (https://docs.digitalocean.com/products/kubernetes/how-to/use-routing-agent/).
+
+
 ### 2/22/2025: We will release a *managed* static route operator (called *routing agent*) for DigitalOcean Kubernetes within a couple of weeks. It will support both 0.0.0.0 default route, and multiple destinations using ECMP!! This repo will become irrelevant and replaced by a managed component. We strongly recommend to wait for the new release if you are starting out now.
 
 
